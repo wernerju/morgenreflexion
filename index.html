@@ -1,67 +1,143 @@
+
 <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fokus-Morgenreflexion</title>
+  <title>Fokus-Morgenreflexion – Journal</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 2rem; background-color: #f4f4f4; color: #333; }
-    .container { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); max-width: 700px; margin: auto; }
-    h1 { text-align: center; color: #2c3e50; }
+    body { font-family: Arial, sans-serif; margin: 0; background-color: #f4f4f4; color: #333; }
+    .layout { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: 220px;
+      background-color: #2c3e50;
+      color: white;
+      padding: 1rem;
+      box-shadow: 2px 0 6px rgba(0,0,0,0.1);
+    }
+    .sidebar h2 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+    .entry-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .entry-list li {
+      padding: 0.5rem;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+    .entry-list li:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    .content {
+      flex: 1;
+      padding: 2rem;
+    }
+    h1 { color: #2c3e50; text-align: center; }
     h2 { color: #34495e; margin-top: 1.5rem; }
-    textarea { width: 100%; padding: 0.5rem; margin-top: 0.5rem; margin-bottom: 1rem; border-radius: 5px; border: 1px solid #ccc; font-size: 1rem; resize: vertical; }
-    button { background-color: #2c3e50; color: white; padding: 0.6rem 1.2rem; border: none; border-radius: 5px; font-size: 1rem; cursor: pointer; display: block; margin: 1rem auto 0; }
+    textarea {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.5rem;
+      margin-bottom: 1rem;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      resize: vertical;
+    }
+    button {
+      background-color: #2c3e50;
+      color: white;
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-right: 1rem;
+    }
+    .button-row { margin-top: 1.5rem; text-align: center; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Fokus-Morgenreflexion</h1>
-    <h2>1. Zentrierung - "Ich bin hier"</h2>
-    <textarea id="feld1" rows="3" placeholder="Meine Antwort..."></textarea>
-    <h2>2. Klarheit - "Was ist heute wirklich wichtig?"</h2>
-    <textarea id="feld2" rows="3" placeholder="Meine wichtigste Aufgabe heute..."></textarea>
-    <h2>3. Selbstverantwortung - "Ich habe die Wahl"</h2>
-    <textarea id="feld3" rows="3" placeholder="Das liegt heute in meiner Hand..."></textarea>
-    <h2>4. Grenzen setzen - "Wovon lasse ich mich heute nicht ablenken?"</h2>
-    <textarea id="feld4" rows="3" placeholder="Ablenkungen, die ich meide..."></textarea>
-    <h2>5. Positive Ausrichtung - "Mit welcher Haltung gehe ich in den Tag?"</h2>
-    <textarea id="feld5" rows="3" placeholder="Meine Intention f�r den Tag..."></textarea>
-    <button onclick="speichernAlsText()">Lokal speichern</button>
-    <button onclick="alsPDFExportieren()">Als PDF exportieren</button>
+  <div class="layout">
+    <aside class="sidebar">
+      <h2>📅 Journal</h2>
+      <ul class="entry-list" id="journal-list"></ul>
+    </aside>
+    <main class="content">
+      <h1>Fokus-Morgenreflexion <span id="heutigesDatum"></span></h1>
+      <h2>1. Zentrierung</h2>
+      <textarea id="feld1" rows="3" placeholder="Meine Antwort..."></textarea>
+      <h2>2. Klarheit</h2>
+      <textarea id="feld2" rows="3" placeholder="Meine wichtigste Aufgabe heute..."></textarea>
+      <h2>3. Selbstverantwortung</h2>
+      <textarea id="feld3" rows="3" placeholder="Das liegt heute in meiner Hand..."></textarea>
+      <h2>4. Grenzen setzen</h2>
+      <textarea id="feld4" rows="3" placeholder="Ablenkungen, die ich meide..."></textarea>
+      <h2>5. Positive Ausrichtung</h2>
+      <textarea id="feld5" rows="3" placeholder="Meine Intention für den Tag..."></textarea>
+      <div class="button-row">
+        <button onclick="eintragSpeichern()">Speichern</button>
+        <button onclick="eintragExportieren()">Exportieren</button>
+      </div>
+    </main>
   </div>
+
   <script>
     const felder = ['feld1', 'feld2', 'feld3', 'feld4', 'feld5'];
+    const heute = new Date().toISOString().slice(0, 10);
 
-    // Inhalte aus localStorage wiederherstellen
-    window.onload = () => {
-      felder.forEach(id => {
-        const gespeicherterWert = localStorage.getItem(id);
-        if (gespeicherterWert) {
-          document.getElementById(id).value = gespeicherterWert;
-        }
-        // Automatisches Speichern beim Tippen
-        document.getElementById(id).addEventListener('input', e => {
-          localStorage.setItem(id, e.target.value);
-        });
+    document.getElementById("heutigesDatum").innerText = `– ${heute}`;
+
+    function ladeJournal() {
+      const journal = JSON.parse(localStorage.getItem('journal')) || {};
+      const liste = document.getElementById('journal-list');
+      liste.innerHTML = '';
+      Object.keys(journal).sort().reverse().forEach(datum => {
+        const li = document.createElement('li');
+        li.textContent = datum;
+        li.onclick = () => ladeEintrag(datum);
+        liste.appendChild(li);
       });
-    };
+    }
 
-    function speichernAlsText() {
-      const inhalte = felder.map(id => document.getElementById(id).value);
-      const text = `Fokus-Morgenreflexion\n\n1. Zentrierung:\n${inhalte[0]}\n\n2. Klarheit:\n${inhalte[1]}\n\n3. Selbstverantwortung:\n${inhalte[2]}\n\n4. Grenzen setzen:\n${inhalte[3]}\n\n5. Positive Ausrichtung:\n${inhalte[4]}`;
+    function eintragSpeichern() {
+      const journal = JSON.parse(localStorage.getItem('journal')) || {};
+      const daten = {};
+      felder.forEach(id => {
+        daten[id] = document.getElementById(id).value;
+      });
+      journal[heute] = daten;
+      localStorage.setItem('journal', JSON.stringify(journal));
+      ladeJournal();
+      alert('Eintrag gespeichert!');
+    }
+
+    function ladeEintrag(datum) {
+      const journal = JSON.parse(localStorage.getItem('journal')) || {};
+      if (!journal[datum]) return;
+      felder.forEach(id => {
+        document.getElementById(id).value = journal[datum][id] || '';
+      });
+      document.getElementById("heutigesDatum").innerText = `– ${datum}`;
+    }
+
+    function eintragExportieren() {
+      const daten = felder.map(id => document.getElementById(id).value);
+      const text = `Fokus-Morgenreflexion (${heute})\n\n1. Zentrierung:\n${daten[0]}\n\n2. Klarheit:\n${daten[1]}\n\n3. Selbstverantwortung:\n${daten[2]}\n\n4. Grenzen setzen:\n${daten[3]}\n\n5. Positive Ausrichtung:\n${daten[4]}`;
       const blob = new Blob([text], { type: 'text/plain' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = 'Fokus-Morgenreflexion.txt';
+      link.download = `Fokus-Morgenreflexion-${heute}.txt`;
       link.click();
     }
 
-    function alsPDFExportieren() {
-      const inhalte = felder.map(id => document.getElementById(id).value);
-      const text = `Fokus-Morgenreflexion\n\n1. Zentrierung:\n${inhalte[0]}\n\n2. Klarheit:\n${inhalte[1]}\n\n3. Selbstverantwortung:\n${inhalte[2]}\n\n4. Grenzen setzen:\n${inhalte[3]}\n\n5. Positive Ausrichtung:\n${inhalte[4]}`;
-      const pdfWindow = window.open('');
-      pdfWindow.document.write(`<pre>${text}</pre>`);
-      pdfWindow.print();
+    ladeJournal();
+    if (JSON.parse(localStorage.getItem('journal'))?.[heute]) {
+      ladeEintrag(heute);
     }
   </script>
 </body>
