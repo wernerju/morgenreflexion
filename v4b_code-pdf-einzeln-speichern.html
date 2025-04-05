@@ -1,0 +1,34 @@
+// ... bestehender HTML-Code bleibt gleich bis zur Funktion ladeEintrag ...
+
+function ladeEintrag(datum) {
+  const journal = JSON.parse(localStorage.getItem('journal')) || {};
+  if (!journal[datum]) return;
+  felder.forEach(id => {
+    document.getElementById(id).value = journal[datum][id] || '';
+  });
+  document.getElementById('tags').value = journal[datum].tags || '';
+  document.getElementById("heutigesDatum").innerText = `– ${datum}`;
+
+  // Erzeuge Button für PDF-Export
+  let existing = document.getElementById("pdf-export-button");
+  if (existing) existing.remove();
+  const button = document.createElement('button');
+  button.id = "pdf-export-button";
+  button.textContent = "?? Als PDF speichern";
+  button.onclick = () => eintragAlsPDF(datum);
+  button.style.marginTop = "1rem";
+  document.querySelector(".button-row").appendChild(button);
+}
+
+function eintragAlsPDF(datum) {
+  const journal = JSON.parse(localStorage.getItem('journal')) || {};
+  const daten = journal[datum];
+  if (!daten) return;
+  const text = `Fokus-Morgenreflexion (${datum})\nTags: ${daten.tags || ''}\n\n1. Zentrierung:\n${daten.feld1 || ''}\n\n2. Klarheit:\n${daten.feld2 || ''}\n\n3. Selbstverantwortung:\n${daten.feld3 || ''}\n\n4. Grenzen setzen:\n${daten.feld4 || ''}\n\n5. Positive Ausrichtung:\n${daten.feld5 || ''}`;
+  const win = window.open('', '', 'width=800,height=600');
+  win.document.write(`<pre style='font-family: Arial; white-space: pre-wrap;'>${text}</pre>`);
+  win.document.close();
+  win.print();
+}
+
+// ... restlicher Code bleibt gleich ...

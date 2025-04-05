@@ -18,6 +18,9 @@
       font-size: 1.2rem;
       margin-bottom: 1rem;
     }
+    .filter {
+      margin-bottom: 1rem;
+    }
     .entry-list {
       list-style: none;
       padding: 0;
@@ -46,6 +49,9 @@
       border: 1px solid #ccc;
       font-size: 1rem;
     }
+    datalist {
+      display: none;
+    }
     button {
       background-color: #2c3e50;
       color: white;
@@ -64,6 +70,10 @@
   <div class="layout">
     <aside class="sidebar">
       <h2>?? Journal</h2>
+      <div class="filter">
+        <label for="tagFilter">?? Nach Tag filtern:</label>
+        <input type="text" id="tagFilter" placeholder="z. B. fokus">
+      </div>
       <ul class="entry-list" id="journal-list"></ul>
     </aside>
     <main class="content">
@@ -79,7 +89,8 @@
       <h2>5. Positive Ausrichtung</h2>
       <textarea id="feld5" rows="3" placeholder="Meine Intention für den Tag..."></textarea>
       <label for="tags">Tags (durch Komma trennen)</label>
-      <input type="text" id="tags" placeholder="z.B. fokus, klarheit, dankbarkeit">
+      <input type="text" id="tags" list="tag-vorschlaege" placeholder="z.B. fokus, klarheit, dankbarkeit">
+      <datalist id="tag-vorschlaege"></datalist>
       <div class="button-row">
         <button onclick="eintragSpeichern()">Speichern</button>
         <button onclick="eintragExportieren()">Exportieren</button>
@@ -93,18 +104,42 @@
 
     document.getElementById("heutigesDatum").innerText = `– ${heute}`;
 
-    function ladeJournal() {
+    function ladeJournal(filter = '') {
       const journal = JSON.parse(localStorage.getItem('journal')) || {};
       const liste = document.getElementById('journal-list');
       liste.innerHTML = '';
+      const alleTags = new Set();
+      const filterTag = filter.trim().toLowerCase();
+
       Object.keys(journal).sort().reverse().forEach(datum => {
+        const eintrag = journal[datum];
+        const tags = eintrag.tags || '';
+        const tagArray = tags.split(',').map(t => t.trim().toLowerCase());
+
+        if (filterTag && !tagArray.includes(filterTag)) return;
+
         const li = document.createElement('li');
-        const tags = journal[datum].tags ? ` [${journal[datum].tags}]` : '';
-        li.textContent = datum + tags;
+        li.textContent = datum + (tags ? ` [${tags}]` : '');
         li.onclick = () => ladeEintrag(datum);
         liste.appendChild(li);
+
+        tagArray.forEach(t => {
+          if (t) alleTags.add(t);
+        });
+      });
+
+      const vorschlaege = document.getElementById('tag-vorschlaege');
+      vorschlaege.innerHTML = '';
+      Array.from(alleTags).sort().forEach(tag => {
+        const option = document.createElement('option');
+        option.value = tag;
+        vorschlaege.appendChild(option);
       });
     }
+
+    document.getElementById('tagFilter').addEventListener('input', e => {
+      ladeJournal(e.target.value);
+    });
 
     function eintragSpeichern() {
       const journal = JSON.parse(localStorage.getItem('journal')) || {};
@@ -127,6 +162,27 @@
       });
       document.getElementById('tags').value = journal[datum].tags || '';
       document.getElementById("heutigesDatum").innerText = `– ${datum}`;
+
+      // Erzeuge Button für PDF-Export
+      let existing = document.getElementById("pdf-export-button");
+      if (existing) existing.remove();
+      const button = document.createElement('button');
+      button.id = "pdf-export-button";
+      button.textContent = "?? Als PDF speichern";
+      button.onclick = () => eintragAlsPDF(datum);
+      button.style.marginTop = "1rem";
+      document.querySelector(".button-row").appendChild(button);
+    }
+
+    function eintragAlsPDF(datum) {
+      const journal = JSON.parse(localStorage.getItem('journal')) || {};
+      const daten = journal[datum];
+      if (!daten) return;
+      const text = `Fokus-Morgenreflexion (${datum})\nTags: ${daten.tags || ''}\n\n1. Zentrierung:\n${daten.feld1 || ''}\n\n2. Klarheit:\n${daten.feld2 || ''}\n\n3. Selbstverantwortung:\n${daten.feld3 || ''}\n\n4. Grenzen setzen:\n${daten.feld4 || ''}\n\n5. Positive Ausrichtung:\n${daten.feld5 || ''}`;
+      const win = window.open('', '', 'width=800,height=600');
+      win.document.write(`<pre style='font-family: Arial; white-space: pre-wrap;'>${text}</pre>`);
+      win.document.close();
+      win.print();
     }
 
     function eintragExportieren() {
@@ -147,4 +203,5 @@
   </script>
 </body>
 </html>
+
 
