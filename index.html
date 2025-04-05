@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fokus-Morgenreflexion â€“ Journal</title>
+  <title>Fokus-Morgenreflexion – Journal</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 0; background-color: #f4f4f4; color: #333; }
     .layout { display: flex; min-height: 100vh; }
@@ -38,7 +37,7 @@
     }
     h1 { color: #2c3e50; text-align: center; }
     h2 { color: #34495e; margin-top: 1.5rem; }
-    textarea {
+    textarea, input[type="text"] {
       width: 100%;
       padding: 0.5rem;
       margin-top: 0.5rem;
@@ -46,7 +45,6 @@
       border-radius: 5px;
       border: 1px solid #ccc;
       font-size: 1rem;
-      resize: vertical;
     }
     button {
       background-color: #2c3e50;
@@ -59,12 +57,13 @@
       margin-right: 1rem;
     }
     .button-row { margin-top: 1.5rem; text-align: center; }
+    label { font-weight: bold; display: block; margin-top: 1.5rem; }
   </style>
 </head>
 <body>
   <div class="layout">
     <aside class="sidebar">
-      <h2>ðŸ“… Journal</h2>
+      <h2>?? Journal</h2>
       <ul class="entry-list" id="journal-list"></ul>
     </aside>
     <main class="content">
@@ -78,7 +77,9 @@
       <h2>4. Grenzen setzen</h2>
       <textarea id="feld4" rows="3" placeholder="Ablenkungen, die ich meide..."></textarea>
       <h2>5. Positive Ausrichtung</h2>
-      <textarea id="feld5" rows="3" placeholder="Meine Intention fÃ¼r den Tag..."></textarea>
+      <textarea id="feld5" rows="3" placeholder="Meine Intention für den Tag..."></textarea>
+      <label for="tags">Tags (durch Komma trennen)</label>
+      <input type="text" id="tags" placeholder="z.B. fokus, klarheit, dankbarkeit">
       <div class="button-row">
         <button onclick="eintragSpeichern()">Speichern</button>
         <button onclick="eintragExportieren()">Exportieren</button>
@@ -90,7 +91,7 @@
     const felder = ['feld1', 'feld2', 'feld3', 'feld4', 'feld5'];
     const heute = new Date().toISOString().slice(0, 10);
 
-    document.getElementById("heutigesDatum").innerText = `â€“ ${heute}`;
+    document.getElementById("heutigesDatum").innerText = `– ${heute}`;
 
     function ladeJournal() {
       const journal = JSON.parse(localStorage.getItem('journal')) || {};
@@ -98,7 +99,8 @@
       liste.innerHTML = '';
       Object.keys(journal).sort().reverse().forEach(datum => {
         const li = document.createElement('li');
-        li.textContent = datum;
+        const tags = journal[datum].tags ? ` [${journal[datum].tags}]` : '';
+        li.textContent = datum + tags;
         li.onclick = () => ladeEintrag(datum);
         liste.appendChild(li);
       });
@@ -110,6 +112,7 @@
       felder.forEach(id => {
         daten[id] = document.getElementById(id).value;
       });
+      daten.tags = document.getElementById('tags').value;
       journal[heute] = daten;
       localStorage.setItem('journal', JSON.stringify(journal));
       ladeJournal();
@@ -122,12 +125,14 @@
       felder.forEach(id => {
         document.getElementById(id).value = journal[datum][id] || '';
       });
-      document.getElementById("heutigesDatum").innerText = `â€“ ${datum}`;
+      document.getElementById('tags').value = journal[datum].tags || '';
+      document.getElementById("heutigesDatum").innerText = `– ${datum}`;
     }
 
     function eintragExportieren() {
       const daten = felder.map(id => document.getElementById(id).value);
-      const text = `Fokus-Morgenreflexion (${heute})\n\n1. Zentrierung:\n${daten[0]}\n\n2. Klarheit:\n${daten[1]}\n\n3. Selbstverantwortung:\n${daten[2]}\n\n4. Grenzen setzen:\n${daten[3]}\n\n5. Positive Ausrichtung:\n${daten[4]}`;
+      const tags = document.getElementById('tags').value;
+      const text = `Fokus-Morgenreflexion (${heute})\nTags: ${tags}\n\n1. Zentrierung:\n${daten[0]}\n\n2. Klarheit:\n${daten[1]}\n\n3. Selbstverantwortung:\n${daten[2]}\n\n4. Grenzen setzen:\n${daten[3]}\n\n5. Positive Ausrichtung:\n${daten[4]}`;
       const blob = new Blob([text], { type: 'text/plain' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
@@ -142,3 +147,4 @@
   </script>
 </body>
 </html>
+
