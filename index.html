@@ -180,7 +180,7 @@
       if (!daten) return;
       const text = `Fokus-Morgenreflexion (${datum})\nTags: ${daten.tags || ''}\n\n1. Zentrierung:\n${daten.feld1 || ''}\n\n2. Klarheit:\n${daten.feld2 || ''}\n\n3. Selbstverantwortung:\n${daten.feld3 || ''}\n\n4. Grenzen setzen:\n${daten.feld4 || ''}\n\n5. Positive Ausrichtung:\n${daten.feld5 || ''}`;
       const win = window.open('', '', 'width=800,height=600');
-      win.document.write(`<pre style='font-family: Arial; white-space: pre-wrap;'>${text}</pre>`);
+      win.document.write(`<!DOCTYPE html><html><head><meta charset='UTF-8'><title>PDF Export</title></head><body><pre style='font-family: Arial; white-space: pre-wrap;'>${text}</pre></body></html>`);
       win.document.close();
       win.print();
     }
