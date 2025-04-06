@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fokus-Morgenreflexion â€“ Journal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <title>Fokus-Morgenreflexion – Journal</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 0; background-color: #f4f4f4; color: #333; }
     .layout { display: flex; min-height: 100vh; }
@@ -69,15 +70,15 @@
 <body>
   <div class="layout">
     <aside class="sidebar">
-      <h2>?? Journal</h2>
+      <h2><i class="fas fa-book"></i> Journal</h2>
       <div class="filter">
-        <label for="tagFilter">?? Nach Tag filtern:</label>
-        <input type="text" id="tagFilter" placeholder="z.Â B. fokus">
+        <label for="tagFilter"><i class="fas fa-search"></i> Nach Tag filtern:</label>
+        <input type="text" id="tagFilter" placeholder="z. B. fokus">
       </div>
       <ul class="entry-list" id="journal-list"></ul>
     </aside>
     <main class="content">
-      <h1>Fokus-Morgenreflexion <span id="heutigesDatum"></span></h1>
+      <h1>Fokus-Morgenreflexion - <span id="heutigesDatum"></span></h1>
       <h2>1. Zentrierung</h2>
       <textarea id="feld1" rows="3" placeholder="Meine Antwort..."></textarea>
       <h2>2. Klarheit</h2>
@@ -87,7 +88,7 @@
       <h2>4. Grenzen setzen</h2>
       <textarea id="feld4" rows="3" placeholder="Ablenkungen, die ich meide..."></textarea>
       <h2>5. Positive Ausrichtung</h2>
-      <textarea id="feld5" rows="3" placeholder="Meine Intention fÃ¼r den Tag..."></textarea>
+      <textarea id="feld5" rows="3" placeholder="Meine Intention für den Tag..."></textarea>
       <label for="tags">Tags (durch Komma trennen)</label>
       <input type="text" id="tags" list="tag-vorschlaege" placeholder="z.B. fokus, klarheit, dankbarkeit">
       <datalist id="tag-vorschlaege"></datalist>
@@ -102,7 +103,7 @@
     const felder = ['feld1', 'feld2', 'feld3', 'feld4', 'feld5'];
     const heute = new Date().toISOString().slice(0, 10);
 
-    document.getElementById("heutigesDatum").innerText = `â€“ ${heute}`;
+    document.getElementById("heutigesDatum").innerText = `– ${heute}`;
 
     function ladeJournal(filter = '') {
       const journal = JSON.parse(localStorage.getItem('journal')) || {};
@@ -161,9 +162,9 @@
         document.getElementById(id).value = journal[datum][id] || '';
       });
       document.getElementById('tags').value = journal[datum].tags || '';
-      document.getElementById("heutigesDatum").innerText = `â€“ ${datum}`;
+      document.getElementById("heutigesDatum").innerText = `– ${datum}`;
 
-      // Erzeuge Button fÃ¼r PDF-Export
+      // Erzeuge Button für PDF-Export
       let existing = document.getElementById("pdf-export-button");
       if (existing) existing.remove();
       const button = document.createElement('button');
