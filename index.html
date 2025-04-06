@@ -73,7 +73,7 @@
       <h2><i class="fas fa-book"></i> Journal</h2>
       <div class="filter">
         <label for="tagFilter"><i class="fas fa-search"></i> Nach Tag filtern:</label>
-        <input type="text" id="tagFilter" placeholder="z. B. fokus">
+        <input type="text" id="tagFilter" placeholder="z.B. fokus">
       </div>
       <ul class="entry-list" id="journal-list"></ul>
     </aside>
@@ -169,7 +169,7 @@
       if (existing) existing.remove();
       const button = document.createElement('button');
       button.id = "pdf-export-button";
-      button.textContent = "?? Als PDF speichern";
+      button.innerHTML = '<i class="fas fa-file-pdf"></i> Als PDF speichern';
       button.onclick = () => eintragAlsPDF(datum);
       button.style.marginTop = "1rem";
       document.querySelector(".button-row").appendChild(button);
